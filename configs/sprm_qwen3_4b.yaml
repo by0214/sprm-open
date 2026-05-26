@@ -1,0 +1,38 @@
+# Main SPRM configuration placeholder.
+#
+# This file should be filled during source migration with the exact paper-aligned
+# defaults for Qwen3-4B, Stage1 trajectory value learning, Stage2 SPRM label
+# construction, and Stage3 dual-head PRM training.
+
+model_name: Qwen/Qwen3-4B-Instruct-2507
+st_token: <ST_END>
+
+stage1:
+  hidden_size: 2560
+  bidirectional: true
+  learning_rate: 1.0e-4
+  batch_size: 128
+  num_train_epochs: 10
+  validation_ratio: 0.1
+  early_stop_patience: 5
+
+stage2:
+  svi_steps: 64
+  svi_target: prob
+  enable_refined_causal_consistency: true
+  pairwise_window_size: 2
+  pairwise_beta: 0.5
+  enable_cti: true
+  cti_topk: 50
+  cti_search_k: 400
+
+stage3:
+  label_mode: binary
+  marginal_target: marginal_contribution
+  cti_target: cti_score
+  causal_field: refined_causal_consistency
+  lora_enabled: true
+  learning_rate: 5.0e-5
+  batch_size: 32
+  num_train_epochs: 1
+  max_length: 4096

@@ -1,0 +1,2 @@
+{"id":"tiny-positive","input":"What is 1+1?","label":"What is 1+1?\nStep 1: Add 1 and 1 to get 2.\nStep 2: The answer is 2. +"}
+{"id":"tiny-negative","input":"What is 1+2?","label":"What is 1+2?\nStep 1: Add 1 and 2 to get 4.\nStep 2: The answer is 4. -"}

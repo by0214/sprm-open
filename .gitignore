@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Local data and generated artifacts
+data/**/raw/
+data/**/steps/
+artifacts/**
+!artifacts/README.md
+
+# Large model/data files
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.jsonl
+*.arrow
+*.parquet
+
+# Logs and experiment trackers
+*.log
+wandb/
+outputs/
+
+# Keep tiny examples explicit if they are later added.
+!examples/*.jsonl

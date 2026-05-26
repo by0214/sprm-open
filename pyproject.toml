@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sprm"
+version = "0.1.0"
+description = "SPRM: Marginal-contribution process reward modeling from outcome-only trajectories."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "peft",
+  "safetensors",
+  "torch",
+  "tqdm",
+  "transformers",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff",
+]
+speedups = [
+  "orjson",
+]
+logging = [
+  "wandb",
+]
+benchmarks = [
+  "datasets",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
