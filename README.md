@@ -24,7 +24,7 @@ uv venv .venv
 uv pip install --python .venv/bin/python -e .
 ```
 
-For a CPU-only smoke environment, install CPU PyTorch first:
+For a CPU-only environment, install CPU PyTorch first:
 
 ```bash
 uv venv .venv
@@ -150,43 +150,32 @@ artifacts/stage3/sprm_prm_model/
   sprm_model_config.json
 ```
 
-## Real Local Smoke Test
-
-If `Qwen/Qwen3-4B-Instruct-2507` is already cached locally, run the same command path that users will run:
-
-```bash
-scripts/run_real_qwen3_e2e_smoke.sh
-```
-
-This writes persistent intermediate artifacts under:
-
-```text
-artifacts/real_qwen3_e2e/
-  data/raw/tiny_math_shepherd.jsonl
-  data/steps/tiny_steps.jsonl
-  data/steps/tiny_steps.hidden_states.f16.bin
-  artifacts/stage1/full_model/
-  artifacts/stage2/tiny_steps-sprm-labels.jsonl
-  artifacts/stage3/sprm_prm_model/
-```
-
-The smoke test uses `--local-files-only` and CPU by default. For this smoke path, Stage3 saves tokenizer metadata and `dual_v_heads.*` without copying the full 4B base model into the artifact directory.
-
 ## Inference
+
+Use the released Hugging Face checkpoint:
 
 ```python
 from sprm.inference import SPRMScorer
 
-scorer = SPRMScorer.from_pretrained("path-or-hf-repo")
+scorer = SPRMScorer.from_pretrained(
+    "pikobao/SPRM",
+    subfolder="full",
+    device_map="auto",
+)
 scores = scorer.score_steps(
     question="What is 1+1?",
-    steps=["Step 1: Add 1 and 1.", "Step 2: The answer is 2."],
+    steps=["Add 1 and 1.", "The answer is 2."],
     combine="sprm",
 )
 print(scores.combined)
 ```
 
-The scorer combines the marginal-contribution head and CTI head. Supported combination modes are `marginal`, `cti`, `mul`, and `sprm`.
+The Hugging Face repository contains two variants: `subfolder="full"` and
+`subfolder="pure_svi"`. For a local checkpoint, pass the local adapter directory
+instead of the Hugging Face repo id.
+
+The scorer returns marginal-contribution, CTI, and combined step scores.
+Supported combination modes are `marginal`, `cti`, `mul`, and `sprm`.
 
 ## Evaluation Utilities
 

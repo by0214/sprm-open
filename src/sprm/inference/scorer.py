@@ -81,9 +81,11 @@ class SPRMScorer:
     ) -> "SPRMScorer":
         from transformers import AutoTokenizer
 
+        subfolder = model_kwargs.get("subfolder")
         tokenizer = AutoTokenizer.from_pretrained(
             model_id_or_path,
             trust_remote_code=model_kwargs.pop("trust_remote_code", True),
+            subfolder=subfolder,
             token=model_kwargs.get("token", model_kwargs.get("use_auth_token", None)),
         )
         model = AutoModelForCausalLMWithDualValueHead.from_pretrained(

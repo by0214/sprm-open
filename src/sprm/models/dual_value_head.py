@@ -85,8 +85,13 @@ class AutoModelForCausalLMWithDualValueHead(nn.Module):
         except Exception:
             torch.save(state, output_dir / "dual_v_heads.bin")
 
-    def load_dual_heads(self, model_id_or_path: str | Path, token: str | None = None) -> None:
-        state_path = _resolve_dual_head_path(model_id_or_path, token=token)
+    def load_dual_heads(
+        self,
+        model_id_or_path: str | Path,
+        token: str | None = None,
+        subfolder: str | None = None,
+    ) -> None:
+        state_path = _resolve_dual_head_path(model_id_or_path, token=token, subfolder=subfolder)
         if state_path.suffix == ".safetensors":
             from safetensors.torch import load_file
 
@@ -108,15 +113,17 @@ class AutoModelForCausalLMWithDualValueHead(nn.Module):
         token = kwargs.get("token", kwargs.get("use_auth_token", None))
         trust_remote_code = bool(kwargs.pop("trust_remote_code", True))
         summary_dropout_prob = float(kwargs.pop("summary_dropout_prob", 0.1))
+        subfolder = kwargs.pop("subfolder", None)
 
         from peft import PeftConfig, PeftModel
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
         model_ref = str(model_id_or_path)
-        peft_config = PeftConfig.from_pretrained(model_ref, token=token)
+        peft_config = PeftConfig.from_pretrained(model_ref, subfolder=subfolder, token=token)
         tokenizer = AutoTokenizer.from_pretrained(
             model_ref,
             trust_remote_code=trust_remote_code,
+            subfolder=subfolder,
             token=token,
         )
         base = AutoModelForCausalLM.from_pretrained(
@@ -127,16 +134,28 @@ class AutoModelForCausalLMWithDualValueHead(nn.Module):
         )
         if hasattr(base, "resize_token_embeddings"):
             base.resize_token_embeddings(len(tokenizer))
-        base = PeftModel.from_pretrained(base, model_ref, is_trainable=False, token=token)
+        base = PeftModel.from_pretrained(
+            base,
+            model_ref,
+            is_trainable=False,
+            subfolder=subfolder,
+            token=token,
+        )
 
         model = cls(base, summary_dropout_prob=summary_dropout_prob)
-        model.load_dual_heads(model_ref, token=token)
+        model.load_dual_heads(model_ref, token=token, subfolder=subfolder)
         return model
 
 
-def _resolve_dual_head_path(model_id_or_path: str | Path, token: str | None) -> Path:
+def _resolve_dual_head_path(
+    model_id_or_path: str | Path,
+    token: str | None,
+    subfolder: str | None = None,
+) -> Path:
     model_ref = Path(model_id_or_path)
     if model_ref.is_dir():
+        if subfolder:
+            model_ref = model_ref / subfolder
         for name in ("dual_v_heads.safetensors", "dual_v_heads.bin"):
             candidate = model_ref / name
             if candidate.exists():
@@ -146,7 +165,7 @@ def _resolve_dual_head_path(model_id_or_path: str | Path, token: str | None) -> 
 
         for name in ("dual_v_heads.safetensors", "dual_v_heads.bin"):
             try:
-                return Path(hf_hub_download(str(model_id_or_path), name, token=token))
+                return Path(hf_hub_download(str(model_id_or_path), name, subfolder=subfolder, token=token))
             except Exception:
                 continue
     raise FileNotFoundError("Could not find dual_v_heads.safetensors or dual_v_heads.bin.")
