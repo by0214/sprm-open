@@ -153,6 +153,7 @@ artifacts/stage3/sprm_prm_model/
 ## Inference
 
 Use the released Hugging Face checkpoint:
+[pikobao/SPRM](https://huggingface.co/pikobao/SPRM).
 
 ```python
 from sprm.inference import SPRMScorer
